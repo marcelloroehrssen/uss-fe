@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'victorian';
+    font-weight: normal;
+    font-style: normal;
+    src: url('./mevno1.ttf');
+}
+
+@font-face {
+    font-family: 'gothique';
+    font-weight: normal;
+    font-style: normal;
+    src: url('puppeteer.ttf');
+}

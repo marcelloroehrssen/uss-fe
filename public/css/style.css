@@ -1,0 +1,20 @@
+.BoxedControlLabel {
+    margin: 16px 0;
+    padding: 16px;
+    border-radius: 5px;
+    box-shadow: 3px 3px 10px -5px black;
+    transition: all .3s;
+}
+
+.BoxedControlLabel:hover {
+    box-shadow: black 1px 1px 5px;
+}
+
+.BoxedControlLabel.selected {
+    box-shadow: black 1px 1px 10px;
+}
+
+.BoxedControlLabel.disabled {
+    border-color:#333;
+    color: #333;
+}
