@@ -1,4 +1,4 @@
-import StepTitle from "../../StepTitle";
+import StepTitle from "../../layout/StepTitle";
 import React, {useEffect, useState} from "react";
 import {Box, Divider, Grid} from "@material-ui/core";
 import List from "@material-ui/core/List";
@@ -14,6 +14,8 @@ import ButtonBox from "../../form/ButtonBox";
 import Theme from "../../Theme";
 import {capitalMiniature} from "../../StringUtils";
 import CenteredButton from "../../form/CenteredButton";
+import IntroductionText from "../../IntroductionText";
+import {useLookup} from "../../hook/UseLookup";
 
 const maxAvailableBackgroundPoint = 10;
 
@@ -21,8 +23,9 @@ const getRandomDefect = defect => defect[Math.floor(Math.random() * defect.lengt
 
 const getBackgroundPoint = selectedDefects => selectedDefects.reduce((tot, d2) => tot + d2.cost, 0);
 
-const DefectChoose = ({defects, onValueChange, availableDefects}) => {
+const DefectChoose = ({defects, onValueChange}) => {
 
+    const [availableDefects] = useLookup(['availableDefects'])
     const [isAddDisabled, setAddDisabled] = useState(false);
 
     useEffect(() => {
@@ -66,6 +69,9 @@ const DefectChoose = ({defects, onValueChange, availableDefects}) => {
             spacing={3}
             mb={3}
         >
+            <Grid item xs={12}>
+                <IntroductionText hook="defects" />
+            </Grid>
             <Grid item xs={6}>
                 <ButtonBox selected={defects.mode === 2} disabled={defects.mode === 1} onClick={() => onValueChange({...defects, mode:2})}>
                     <Typography align={'center'} variant={'h4'}>

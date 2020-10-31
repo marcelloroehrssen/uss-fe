@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from "react";
-import StepTitle from "../../StepTitle";
-import {Formik, Form, Field, ErrorMessage, useFormikContext} from 'formik';
+import React, {useState} from "react";
+import StepTitle from "../../layout/StepTitle";
+import {Formik, Form, Field, ErrorMessage} from 'formik';
 import {TextField} from 'formik-material-ui';
 import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
@@ -9,9 +9,8 @@ import Brightness1Icon from "@material-ui/icons/Brightness1";
 import Typography from "@material-ui/core/Typography";
 import FormikRadioGroup from "../../form/FormikRadioGroup";
 import Theme from "../../Theme";
-import CenteredButton from "../../form/CenteredButton";
 import BoxedControlLabel from "../../form/BoxedControlLabel";
-import DescriptedSurface from "../../DescriptedSurface";
+import DescriptedSurface from "../../layout/DescriptedSurface";
 import {capitalMiniature} from "../../StringUtils";
 import AppTooltip from "../../tooltip/AppTooltip";
 import Dialog from "@material-ui/core/Dialog";
@@ -22,8 +21,10 @@ import DialogActions from "@material-ui/core/DialogActions";
 import ListItem from "@material-ui/core/ListItem";
 import List from "@material-ui/core/List";
 import AutoSubmit from "../../form/AutoSubmit";
+import IntroductionText from "../../IntroductionText";
+import {useLookup} from "../../hook/UseLookup";
 
-const getMaxAttribute = (attribute, baseStats) => {
+const getMaxAttribute = (attribute) => {
     return 5;
 }
 
@@ -79,11 +80,10 @@ const FactionSkillTooltip = ({availableSkills, skill}) => (
     </AppTooltip>
 )
 
-const BaseStats = ({baseStats, factionSkills, onSkillChange, onValueChange, availableAttributes, availableFaiths, availableFactions, availableSkills}) => {
+const BaseStats = ({name, attributes, faith, faction, factionSkills, onFactionSkillChange, updateBaseValues}) => {
 
+    const [availableAttributes, availableFaiths, availableSkills, availableFactions] = useLookup(['availableAttributes', 'availableFaiths', 'availableSkills', 'availableFactions'])
     const [showModal, setShowModal] = useState(false);
-
-    useEffect(() => window.scrollTo(0, 0), []);
 
     const handleClose = () => {
         setShowModal(false);
@@ -117,18 +117,11 @@ const BaseStats = ({baseStats, factionSkills, onSkillChange, onValueChange, avai
         return errors;
     }
 
-    const submit = (values, {setSubmitting}) => {
+    const submit = ({name, faction, faith, physical, mental, social}, {setSubmitting}) => {
         setSubmitting(false);
-        onValueChange({
-            name: values.name,
-            faith: values.faith,
-            faction: values.faction,
-            skills: {
-                physical: values.physical,
-                mental: values.mental,
-                social: values.social,
-            }
-        })
+        updateBaseValues(
+            name, faith, faction, {'physical': physical, 'mental': mental, 'social': social}
+        )
         setShowModal(true);
     }
 
@@ -144,20 +137,24 @@ const BaseStats = ({baseStats, factionSkills, onSkillChange, onValueChange, avai
         <>
             <StepTitle>Caratteristiche base</StepTitle>
             <Formik
+                validateOnMount={true}
                 initialValues={{
-                    name: baseStats.name,
-                    remainingPoints: baseStats.skills.physical + baseStats.skills.mental + baseStats.skills.social,
-                    faith: baseStats.faith,
-                    faction: baseStats.faction,
-                    physical: baseStats.skills.physical,
-                    mental: baseStats.skills.mental,
-                    social: baseStats.skills.social
+                    name: name,
+                    remainingPoints: attributes.physical + attributes.mental + attributes.social,
+                    faith: faith,
+                    faction: faction,
+                    physical: attributes.physical,
+                    mental: attributes.mental,
+                    social: attributes.social
                 }}
                 validate={validate}
                 onSubmit={submit}>
                 {({values, setFieldValue}) => (
                     <Form>
                         <Box m={2} justifyContent="center">
+                            <Typography variant={'h4'}
+                                        align={"center"} paragraph={true}>{capitalMiniature("Scegli una fede")}</Typography>
+                            <IntroductionText hook="attributes" />
                             <Field component={TextField} variant="outlined" name="name" type="text"
                                    label="Nome completo" fullWidth/>
                         </Box>
@@ -178,7 +175,7 @@ const BaseStats = ({baseStats, factionSkills, onSkillChange, onValueChange, avai
                                             <Rating
                                                 name={item.key}
                                                 value={values[item.key]}
-                                                max={getMaxAttribute(item.key, baseStats)}
+                                                max={getMaxAttribute(item.key)}
                                                 onChange={skillRatingChange(item.key, values, setFieldValue)}
                                                 icon={<Brightness1Icon/>}
                                             />
@@ -197,7 +194,8 @@ const BaseStats = ({baseStats, factionSkills, onSkillChange, onValueChange, avai
                         </Box>
                         <Box m={2} justifyContent="center">
                             <Typography variant={'h4'}
-                                        align={"center"}>{capitalMiniature("Scegli una fede")}</Typography>
+                                        align={"center"} paragraph={true}>{capitalMiniature("Scegli una fede")}</Typography>
+                            <IntroductionText hook="faiths" />
                             <Field name="faith">
                                 {({field, form}) => (
                                     <FormRadioItem field={field} form={form} availables={availableFaiths} name="faith">
@@ -210,7 +208,8 @@ const BaseStats = ({baseStats, factionSkills, onSkillChange, onValueChange, avai
                         </Box>
                         <Box m={2} justifyContent="center">
                             <Typography variant={'h4'}
-                                        align={"center"}>{capitalMiniature("Scegli una fazione")}</Typography>
+                                        align={"center"} paragraph={true}>{capitalMiniature("Scegli una fazione")}</Typography>
+                            <IntroductionText hook="factions" />
                             <Field name="faction">
                                 {({field, form}) => (
                                     <FormRadioItem field={field} form={form} availables={availableFactions}
@@ -237,12 +236,12 @@ const BaseStats = ({baseStats, factionSkills, onSkillChange, onValueChange, avai
                             </Field>
                         </Box>
                         <AutoSubmit/>
-                        <Dialog open={showModal} onClose={handleClose}>
+                        <Dialog open={showModal}>
                             <SkillModal
                                 factionSkills={values.faction ? availableFactions.find(a => a.name === values.faction).skills : null}
                                 handleClose={handleClose}
                                 value={factionSkills}
-                                onSkillChoose={onSkillChange}
+                                onSkillChoose={onFactionSkillChange}
                                 availableSkills={availableSkills}/>
                         </Dialog>
                     </Form>

@@ -3,13 +3,13 @@ import {useEffect} from "react";
 
 const AutoSubmit = () => {
 
-    const {isValid, submitForm, dirty} = useFormikContext();
+    const {values, isValidating, validateForm, dirty, isValid, submitForm, initialValues, ...props} = useFormikContext();
 
     useEffect(() => {
-        if (isValid && dirty) {
-             submitForm();
+        if (isValid && dirty && values !== initialValues) {
+            submitForm();
         }
-    }, [isValid]);
+    }, [isValid, dirty, values]);
 
     return null;
 };

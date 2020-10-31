@@ -15,7 +15,7 @@ const HtmlTooltip = withStyles((theme) => ({
     },
 }))(Tooltip);
 
-const getSkill = (availableSkills, skill) => availableSkills.filter(s =>  s.name.toLowerCase() === skill.toLowerCase()).pop();
+const getSkill = (availableSkills, skill) => availableSkills.filter(s =>  s.name.toLowerCase() === skill.toLowerCase().replace(/_[0-9]+$/,'')).pop();
 
 const AppTooltip = ({availableData, data, children, ...props}) => (
     <HtmlTooltip {...props} title={<TooltipContent data={getSkill(availableData, data)} />}>{children}</HtmlTooltip>

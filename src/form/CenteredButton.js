@@ -27,7 +27,7 @@ const CenteredButton = ({children, semiCondensed, condensed, ...props}) => (
     <Box
         mt={semiCondensed ? '16px' : condensed ? 0 : Theme.spacing(1)}
         align={'center'}>
-        <StyledButton {...props} style={{}}>
+        <StyledButton {...props}>
             {children}
         </StyledButton>
     </Box>

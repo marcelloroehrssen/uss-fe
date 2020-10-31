@@ -12,6 +12,7 @@ const StyledBoxedControlLabel = withStyles((theme) => ({
 
 const BoxedControlLabel = ({value, label, selected, disabled, props}) => {
     return (<StyledBoxedControlLabel
+        style={{width: '100%'}}
         {...props}
         className={clsx('BoxedControlLabel', selected ? 'selected' : '', disabled ? 'disabled' : '')}
         value={value}

@@ -1,5 +1,5 @@
-import StepTitle from "../../StepTitle";
-import React, {useEffect, useState} from "react";
+import StepTitle from "../../layout/StepTitle";
+import React, {useEffect} from "react";
 import {Grid} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import AppTooltip from "../../tooltip/AppTooltip";
@@ -8,39 +8,35 @@ import Brightness1Icon from "@material-ui/icons/Brightness1";
 import {capitalMiniature} from "../../StringUtils";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
-import CenteredButton from "../../form/CenteredButton";
+import IntroductionText from "../../IntroductionText";
+import {useLookup} from "../../hook/UseLookup";
 
-const getMaxAttribute = (attribute, characterSheet) => {
+const getMaxAttribute = (attribute) => {
     return 3;
 }
 
-const SkillChoose = ({characterSheet, dispatch, onDiscaredSkill, onValueChange, availableSkills}) => {
+const SkillChoose = ({selectedSkills, jobSkills, factionSkills, discardedSkill, mental, onDiscaredSkill, onValueChange}) => {
 
-    const [state, setState] = useState({})
-    const [deletedSkill, setDeletedSkill] = useState(characterSheet.factionSkills)
-
-    useEffect(() => {
-        if (getRemainingPoint() === 0) {
-            onValueChange({...state})
-        }
-    }, [state])
+    const [availableSkills] = useLookup(['availableSkills']);
 
     useEffect(() => {
-        onDiscaredSkill(deletedSkill);
-        delete state[deletedSkill];
-        setState({...state})
-    }, [deletedSkill])
+        delete selectedSkills[discardedSkill];
+        onValueChange({...selectedSkills})
+    }, [discardedSkill])
 
     const getRemainingPoint = () => {
-        return (characterSheet.base.skills.mental * 2)+ 1 - Object.values(state).reduce((t, v) => t + v, 0);
+        return (mental * 2) + 1 - Object.values(selectedSkills).reduce((t, v) => t + v, 0);
     }
 
     const chooseSkill = (skill) => (e, v) => {
-        setState({...state, [skill]: v || 0});
+        if (getRemainingPoint() >= v) {
+            onValueChange({...selectedSkills, [skill]: v || 0});
+        }
     }
 
     return <>
         <StepTitle>Scegli le tua abilità</StepTitle>
+        <IntroductionText hook="skills" />
         <Grid
             container
             direction="row"
@@ -50,7 +46,8 @@ const SkillChoose = ({characterSheet, dispatch, onDiscaredSkill, onValueChange, 
             <Grid item xs={12}>
                 <Box align="center">
                     <Typography variant="caption" align="center">
-                        Puoi scegliere di scartare una abilità derivante dal mestiere in favore di quella derivante dalla fazione
+                        Puoi scegliere di scartare una abilità derivante dal mestiere in favore di quella derivante
+                        dalla fazione
                     </Typography>
                 </Box>
             </Grid>
@@ -70,24 +67,26 @@ const SkillChoose = ({characterSheet, dispatch, onDiscaredSkill, onValueChange, 
             </Grid>
             <Grid item xs={3}>
                 <Box align="right">
-                    {!deletedSkill.includes(characterSheet.factionSkills) && <Button variant="outlined" color="primary" onClick={() => setDeletedSkill(characterSheet.factionSkills)}>Scarta</Button>}
+                    {!(factionSkills === discardedSkill) && <Button variant="outlined" color="primary"
+                                                                    onClick={() => onDiscaredSkill(factionSkills)}>Scarta</Button>}
                 </Box>
             </Grid>
             <Grid item xs={3}>
-                <Typography variant="caption" style={{textDecoration:deletedSkill.includes(characterSheet.factionSkills) ? 'line-through' : 'none'}}>{characterSheet.factionSkills}</Typography>
+                <Typography variant="caption"
+                            style={{textDecoration: factionSkills === discardedSkill ? 'line-through' : 'none'}}>{factionSkills}</Typography>
             </Grid>
             <Grid item xs={3}>
                 <Box align="right">
-                <AppTooltip availableData={availableSkills} data={characterSheet.factionSkills} placement="right">
-                    <Rating
-                        disabled={deletedSkill.includes(characterSheet.factionSkills)}
-                        name={characterSheet.factionSkills.toLowerCase()}
-                        value={state[characterSheet.factionSkills] || 0}
-                        onChange={chooseSkill(characterSheet.factionSkills)}
-                        max={getMaxAttribute(characterSheet.factionSkills, characterSheet)}
-                        icon={<Brightness1Icon/>}
-                    />
-                </AppTooltip>
+                    <AppTooltip availableData={availableSkills} data={factionSkills} placement="right">
+                        <Rating
+                            disabled={factionSkills === discardedSkill}
+                            name={factionSkills.toLowerCase()}
+                            value={selectedSkills[factionSkills] || 0}
+                            onChange={chooseSkill(factionSkills)}
+                            max={getMaxAttribute(factionSkills)}
+                            icon={<Brightness1Icon/>}
+                        />
+                    </AppTooltip>
                 </Box>
             </Grid>
             <Grid item xs={3}/>
@@ -97,24 +96,26 @@ const SkillChoose = ({characterSheet, dispatch, onDiscaredSkill, onValueChange, 
                 </Typography>
             </Grid>
             {
-                characterSheet.jobSkills.map(jobSkill => (<React.Fragment key={jobSkill}>
+                jobSkills.map(jobSkill => (<React.Fragment key={jobSkill}>
                     <Grid item xs={3}>
                         <Box align="right">
-                            {!deletedSkill.includes(jobSkill) && <Button variant="outlined" color="primary" onClick={() => setDeletedSkill(jobSkill)}>Scarta</Button>}
+                            {!jobSkill.includes(discardedSkill) && <Button variant="outlined" color="primary"
+                                                                           onClick={() => onDiscaredSkill(jobSkill)}>Scarta</Button>}
                         </Box>
                     </Grid>
                     <Grid item xs={3}>
-                        <Typography variant="caption" style={{textDecoration:deletedSkill.includes(jobSkill) ? 'line-through' : 'none'}}>{jobSkill}</Typography>
+                        <Typography variant="caption"
+                                    style={{textDecoration: jobSkill.includes(discardedSkill) ? 'line-through' : 'none'}}>{jobSkill}</Typography>
                     </Grid>
                     <Grid item xs={3}>
                         <Box align="right">
                             <AppTooltip availableData={availableSkills} data={jobSkill} placement="right">
                                 <Rating
-                                    disabled={deletedSkill.includes(jobSkill)}
+                                    disabled={jobSkill.includes(discardedSkill)}
                                     name={jobSkill}
-                                    value={state[jobSkill] || 0}
+                                    value={selectedSkills[jobSkill] || 0}
                                     onChange={chooseSkill(jobSkill)}
-                                    max={getMaxAttribute(jobSkill, characterSheet)}
+                                    max={getMaxAttribute(jobSkill)}
                                     icon={<Brightness1Icon/>}
                                 />
                             </AppTooltip>
@@ -123,15 +124,6 @@ const SkillChoose = ({characterSheet, dispatch, onDiscaredSkill, onValueChange, 
                     <Grid item xs={3}/>
                 </React.Fragment>))
             }
-            <Grid item xs={12}>
-                <CenteredButton
-                    disabled={getRemainingPoint() > 0}
-                    variant="contained"
-                    color="primary"
-                    onClick={() => dispatch('next')}>
-                    Ho scelto
-                </CenteredButton>
-            </Grid>
         </Grid>
     </>;
 }

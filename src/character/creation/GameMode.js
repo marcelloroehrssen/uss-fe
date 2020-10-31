@@ -2,13 +2,15 @@ import Typography from "@material-ui/core/Typography";
 import React from "react";
 import {Divider, Grid} from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import StepTitle from "../../StepTitle";
+import StepTitle from "../../layout/StepTitle";
 import ButtonBox from "../../form/ButtonBox";
 import {capitalMiniature} from "../../StringUtils";
+import IntroductionText from "../../IntroductionText";
 
 const GameMode = ({mode, onModeChoose}) => (
     <>
         <StepTitle>Scegli la modalità di gioco</StepTitle>
+        <IntroductionText hook="mode"/>
         <Grid
             container
             direction="column"

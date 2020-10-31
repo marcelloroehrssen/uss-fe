@@ -1,5 +1,5 @@
 import Typography from "@material-ui/core/Typography";
-import Theme from "./Theme";
+import Theme from "../Theme";
 import React from "react";
 
 const DescriptedSurface = ({

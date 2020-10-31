@@ -3,16 +3,14 @@ export default (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify(
         {
-            mode: 1,
-            base: {
-                name: '',
-                faith: null,
-                faction: null,
-                skills: {
-                    physical: 1,
-                    mental: 1,
-                    social: 1,
-                }
+            mode: 0,
+            name: '',
+            faith: null,
+            faction: null,
+            attributes: {
+                physical: 1,
+                mental: 1,
+                social: 1,
             },
             defects: {
                 mode: -1 ,
@@ -22,7 +20,8 @@ export default (req, res) => {
             jobSkills: [],
             factionSkills: null,
             skills: [],
-            discardedSkill: null
+            discardedSkill: null,
+            backgrounds: {}
         }
     ))
 }

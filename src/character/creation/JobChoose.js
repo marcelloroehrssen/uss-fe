@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from "react";
-import StepTitle from "../../StepTitle";
+import StepTitle from "../../layout/StepTitle";
 import {Box, List} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import { Field, Form, Formik} from "formik";
+import {Field, Form, Formik} from "formik";
 import FormikRadioGroup from "../../form/FormikRadioGroup";
 import Theme from "../../Theme";
 import {capitalMiniature, ucfirst} from "../../StringUtils";
 import BoxedControlLabel from "../../form/BoxedControlLabel";
-import DescriptedSurface from "../../DescriptedSurface";
+import DescriptedSurface from "../../layout/DescriptedSurface";
 import CenteredButton from "../../form/CenteredButton";
 import AppTooltip from "../../tooltip/AppTooltip";
 import Dialog from "@material-ui/core/Dialog";
@@ -16,6 +16,9 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogActions from "@material-ui/core/DialogActions";
 import Button from "@material-ui/core/Button";
 import ListItem from "@material-ui/core/ListItem";
+import Grid from "@material-ui/core/Grid";
+import IntroductionText from "../../IntroductionText";
+import {useLookup} from "../../hook/UseLookup";
 
 const CiteStyle = {
     fontStyle: "normal",
@@ -28,58 +31,55 @@ const CiteStyle = {
     marginBottom: Theme.spacing(1),
 }
 
-const SkillChoose = ({count, list, pushSkills, currentSelection, availableSkills}) => {
-
-    return (<List>
+const SkillChoose = ({count, list, pushSkills, currentSelection, availableSkills}) => (<List>
         {
             list.map((s, i) => (
                 <AppTooltip key={s} availableData={availableSkills} data={s} placement="right">
                     <ListItem button
+                              disabled={list.length === 1}
                               selected={currentSelection.indexOf(s) !== -1}
                               onClick={pushSkills(count, s, list, currentSelection.indexOf(s) !== -1)}>{s.toLowerCase()}</ListItem>
                 </AppTooltip>
             ))
         }
-    </List>);
-}
+    </List>
+);
 
-const SkillModal = ({job, availableSkills, handleClose, onSkillChoose, onStepCompleted}) => {
 
-    const [currentSelection, setCurrentSelection] = useState([]);
+const SkillModal = ({job, selectedSkills, availableSkills, handleClose, onSkillChoose}) => {
+
     const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
     useEffect(() => {
-        const selectableSkills = job.skillGroups.reduce((tot, c) => tot + c.count,0);
-        if (selectableSkills === currentSelection.length) {
+        const selectableSkills = job.skillGroups.reduce((tot, c) => tot + c.count, 0);
+        if (selectableSkills === selectedSkills.length) {
             setIsButtonDisabled(false);
         } else {
             setIsButtonDisabled(true);
         }
-    }, [currentSelection])
+    }, [selectedSkills])
 
     useEffect(() => {
-        job.skillGroups.
-            pushSkills(count, list[0], list, false);
+        job.skillGroups.map(sg => {
+            if (sg.list.length === 1) {
+                selectedSkills.push(sg.list[0]);
+                onSkillChoose([...selectedSkills]);
+            }
+        })
     }, [])
 
     const pushSkills = (count, skill, list, isSelected) => () => {
-        console.log('asd');
+
         if (isSelected) {
-            currentSelection.splice(currentSelection.indexOf(skill), 1);
+            selectedSkills.splice(selectedSkills.indexOf(skill), 1);
         } else {
-            const intersection = currentSelection.filter(x => list.includes(x));
+            const intersection = selectedSkills.filter(x => list.includes(x));
             if (intersection.length === count) {
                 return;
             }
-            currentSelection.push(skill)
+            selectedSkills.push(skill)
         }
-        setCurrentSelection([...currentSelection]);
-    }
-
-    const onConfirm = () => {
-        onSkillChoose(currentSelection);
-        onStepCompleted(true);
-        handleClose();
+        onSkillChoose([...selectedSkills]);
     }
 
     return (<>
@@ -87,12 +87,15 @@ const SkillModal = ({job, availableSkills, handleClose, onSkillChoose, onStepCom
         <DialogContent dividers>
             {
                 job.skillGroups.map((skillGroup, i) => <React.Fragment key={i}>
-                    <Typography>Devi selezionare {skillGroup.count} abilità da questo gruppo</Typography>
+                    <Typography>
+                    {skillGroup.list.length > 1 && `Devi selezionare ${skillGroup.count} abilità da questo gruppo`}
+                    {skillGroup.list.length === 1 && `Questa abilità è selezionata automaticamente`}
+                    </Typography>
                     <SkillChoose count={skillGroup.count}
                                  pushSkills={pushSkills}
                                  availableSkills={availableSkills}
-                                 currentSelection={currentSelection}
-                                 list={skillGroup.list} />
+                                 currentSelection={selectedSkills}
+                                 list={skillGroup.list}/>
                 </React.Fragment>)
             }
         </DialogContent>
@@ -101,7 +104,7 @@ const SkillModal = ({job, availableSkills, handleClose, onSkillChoose, onStepCom
                 variant="outlined"
                 disabled={isButtonDisabled}
                 color="secondary"
-                onClick={onConfirm}>
+                onClick={() => handleClose()}>
                 Ho scelto
             </Button>
         </DialogActions>
@@ -111,14 +114,15 @@ const SkillModal = ({job, availableSkills, handleClose, onSkillChoose, onStepCom
 const SkillList = ({skillGroups, selectedSkills, availableSkills}) => {
     return skillGroups.map((skillGroup, i) => (<React.Fragment key={i}>
         <Typography style={{marginTop: Theme.spacing(2), fontSize: Theme.typography.pxToRem(12)}}>
-            { skillGroup.list.length > 1 && 'Devi selezionare {skillGroup.count} skill da questo gruppo' }
-            { skillGroup.list.length === 1 && 'Questa abilità è automaticamente selezionata' }
+            {skillGroup.list.length > 1 && `Devi selezionare ${skillGroup.count} skill da questo gruppo`}
+            {skillGroup.list.length === 1 && 'Questa abilità è automaticamente selezionata'}
         </Typography>
         <Typography style={{marginTop: Theme.spacing(1), fontSize: Theme.typography.pxToRem(12)}}>
             {
                 skillGroup.list.map((sg, i) => (<React.Fragment key={sg}>
                     <AppTooltip availableData={availableSkills} data={sg}>
-                        <span style={{fontWeight:selectedSkills.indexOf(sg) !== -1 ? 'bold':'normal'}}>{ucfirst(sg)}</span>
+                        <span
+                            style={{fontWeight: selectedSkills.indexOf(sg) !== -1 ? 'bold' : 'normal'}}>{ucfirst(sg)}</span>
                     </AppTooltip>
                     {i !== skillGroup.list.length - 1 && ' - '}
                 </React.Fragment>))
@@ -127,9 +131,9 @@ const SkillList = ({skillGroups, selectedSkills, availableSkills}) => {
     </React.Fragment>))
 }
 
-const JobChoose = ({characterSheet, onStepCompleted, onValueChange, onSkillChange, availableJobsTypes, availableJobs, availableSkills}) => {
+const JobChoose = ({job, jobSkills, mental, onValueChange, onSkillChange}) => {
 
-    const [selectedJob, setSelectedJob] = useState(characterSheet.job);
+    const [availableJobsTypes, availableJobs, availableSkills] = useLookup(['availableJobsTypes', 'availableJobs', 'availableSkills'])
     const [showModal, setShowModal] = useState(false);
 
     const handleClose = () => {
@@ -137,84 +141,63 @@ const JobChoose = ({characterSheet, onStepCompleted, onValueChange, onSkillChang
     };
 
     useEffect(() => {
-        if (selectedJob !== null) {
-            setShowModal(true)
-            onValueChange(selectedJob);
-        }
-    }, [selectedJob])
+        setShowModal(job !== null)
+    }, [job])
 
     return (<>
         <StepTitle>Scegli il tuo mestiere</StepTitle>
-        <Formik
-            initialValues={{job: selectedJob}}
-            validate={values => {
-                return values.job === null ? {job: "Devi selezionare un mestiere"} : {}
-            }}
-            onSubmit={(values, {setSubmitting}) => {
-                setSubmitting(false)
-                setSelectedJob(values.job)
-            }}>
-            {({values, submitForm}) => (
-                <Form>
-                    <Field name="job">
-                        {({field, form}) => (
-                            <FormikRadioGroup form={form} field={field}>
-                                {
-                                    availableJobsTypes.filter(currentJobType => (
-                                        currentJobType.requisite <= characterSheet.base.skills.mental
-                                    )).map(({label, requisite}) => (
-                                        <React.Fragment key={requisite}>
-                                            <Typography component={"h4"} variant={"h4"} align={"center"}>
-                                                {capitalMiniature(label)}
-                                            </Typography>
-                                            {
-                                                availableJobs.filter(j => (
-                                                    j.requisite === requisite
-                                                )).map(job => (
-                                                    <BoxedControlLabel
-                                                        selected={form.values.job === job.name}
-                                                        key={job.name}
-                                                        value={job.name}
-                                                        label={
-                                                            <DescriptedSurface
-                                                                name={capitalMiniature(job.name)}
-                                                                description1={job.description}
-                                                                description2={job.cite}
-                                                                description2Style={CiteStyle}
-                                                                description3={
-                                                                    <SkillList skillGroups={job.skillGroups}
-                                                                               selectedSkills={characterSheet.jobSkills}
-                                                                               availableSkills={availableSkills}/>
-                                                                }
-                                                                description3Component={Box}
-                                                            />
-                                                        }
-                                                    />
-                                                ))
-                                            }
-                                        </React.Fragment>)
-                                    )
-                                }
-                            </FormikRadioGroup>
-                        )}
-                    </Field>
-                    <CenteredButton
-                        variant="contained"
-                        color="primary"
-                        disabled={values.job === null}
-                        onClick={submitForm}>
-                        Ho scelto
-                    </CenteredButton>
-                </Form>
-            )}
-        </Formik>
-        <Dialog open={showModal} onClose={handleClose}>
-            <SkillModal job={availableJobs.find(a => a.name === selectedJob)}
+        <IntroductionText hook="jobs" />
+        <Grid container>
+            {
+                availableJobsTypes.filter(currentJobType => (
+                    currentJobType.requisite <= mental
+                )).map(({label, requisite}) => (
+                    <React.Fragment key={requisite}>
+                        <Grid item xs={12}>
+                            <Typography component={"h4"} variant={"h4"} align={"center"}>
+                                {capitalMiniature(label)}
+                            </Typography>
+                        </Grid>
+                        {
+                            availableJobs.filter(j => (
+                                j.requisite === requisite
+                            )).map(j => (
+                                <Grid item xs={12}
+                                      key={j.name}
+                                      onClick={() => {
+                                          onValueChange(j.name)
+                                      }}>
+                                    <BoxedControlLabel
+                                        selected={job === j.name}
+                                        label={
+                                            <DescriptedSurface
+                                                name={capitalMiniature(j.name)}
+                                                description1={j.description}
+                                                description2={j.cite}
+                                                description2Style={CiteStyle}
+                                                description3={
+                                                    <SkillList skillGroups={j.skillGroups}
+                                                               selectedSkills={jobSkills}
+                                                               availableSkills={availableSkills}/>
+                                                }
+                                                description3Component={Box}
+                                            />
+                                        }
+                                    />
+                                </Grid>
+                            ))
+                        }
+                    </React.Fragment>)
+                )
+            }
+        </Grid>
+        <Dialog open={showModal}>
+            <SkillModal job={availableJobs.find(a => a.name === job)}
+                        selectedSkills={jobSkills}
                         handleClose={handleClose}
                         onSkillChoose={onSkillChange}
-                        onStepCompleted={onStepCompleted}
                         availableSkills={availableSkills}/>
-        </Dialog >
+        </Dialog>
     </>);
 }
 
