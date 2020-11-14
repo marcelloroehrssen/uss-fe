@@ -42,9 +42,11 @@ const Theme = createMuiTheme(
                     fontSize: '20px'
                 }
             },
-            MuiButton: {
-                label: {
-                    color: 'rgba(51, 51, 51, 1)'
+            MuiCheckbox: {
+                root: {
+                    "&$checked": {
+                        color: '#d32f2f'
+                    }
                 }
             }
         },
@@ -65,32 +67,32 @@ const Theme = createMuiTheme(
             ].join(','),
         },
         palette: {
-            // common: {
-            //     black: 'rgba(0, 0, 0, 1)',
-            //     white: '#fff'
-            // },
-            // primary: {
-            //     light: 'rgba(227, 227, 227, 1)',
-            //     main: 'rgba(51, 51, 51, 1)',
-            //     dark: 'rgba(51, 51, 51, 1)',
-            //     contrastText: 'rgba(227, 227, 227, 1)'
-            // },
+            common: {
+                black: 'rgba(0, 0, 0, 1)',
+                white: '#fff'
+            },
+            primary: {
+                light: 'rgba(227, 227, 227, 1)',
+                main: 'rgba(51, 51, 51, 1)',
+                dark: 'rgba(51, 51, 51, 1)',
+                contrastText: 'rgba(227, 227, 227, 1)'
+            },
             // secondary: {
             //     light: 'rgba(252, 252, 252, 1)',
             //     main: 'rgba(204, 204, 204, 1)',
             //     dark: 'rgba(112, 112, 112, 1)',
             //     contrastText: 'rgba(255, 255, 255, 1)'
             // },
-            // error: {
-            //     light: '#e57373',
-            //     main: 'rgba(154, 0, 0, 1)',
-            //     dark: '#d32f2f',
-            //     contrastText: '#fff'
-            // },
+            error: {
+                light: '#e57373',
+                main: 'rgba(154, 0, 0, 1)',
+                dark: '#d32f2f',
+                contrastText: '#fff'
+            },
             // text: {
-            //     primary: 'rgba(243, 243, 243, 0.87)',
-            //     secondary: 'rgba(255, 255, 255, 0.54)',
-            //     disabled: 'rgba(70, 0, 0, 0.38)',
+            //     primary: 'rgba(51, 51, 51, 1)',
+            //     secondary: 'rgba(204, 204, 204, 1)',
+            //     disabled: 'rgba(112, 112, 112, 1)',
             //     hint: 'rgba(162, 116, 116, 0.38)'
             // }
         }

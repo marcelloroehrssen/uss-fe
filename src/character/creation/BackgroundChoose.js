@@ -60,7 +60,7 @@ const BackgroundChoose = ({selectedbackgrounds, onValueChange, characterSheet}) 
     }, 0)
 
     const getAvailablePoints = () => {
-        const defectsPoints = availableDefects.filter(d => characterSheet.defects.list.includes(d.name)).reduce((t, d) => t + d.cost, 0)
+        const defectsPoints = availableDefects.filter(d => characterSheet.defects.includes(d.name)).reduce((t, d) => t + d.cost, 0)
         return defectsPoints + ((2 * characterSheet.attributes.mental) + 1);
     }
 

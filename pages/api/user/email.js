@@ -1,10 +1,10 @@
 export default async (req, res) => {
 
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.TLS_REJECT_UNAUTHORIZED;
 
     delete req.headers.host;
 
-    const emailReq = fetch('http://localhost:8000/user/email',{
+    const emailReq = fetch(process.env.BACKEND_URL + 'user/email',{
         method: 'post',
         body: req.body
     }).then(r =>  r.json());

@@ -7,6 +7,7 @@ export const useAlert = () => {
     const [message, setMessage] = useState(null);
     const [show, setShow] = useState(false);
 
+
     const alertOpen = (title, message) => {
         setTitle(title);
         setMessage(message);

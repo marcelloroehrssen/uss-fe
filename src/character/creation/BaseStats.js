@@ -80,7 +80,7 @@ const FactionSkillTooltip = ({availableSkills, skill}) => (
     </AppTooltip>
 )
 
-const BaseStats = ({name, attributes, faith, faction, factionSkills, onFactionSkillChange, updateBaseValues}) => {
+const BaseStats = ({name, attributes, faith, faction, factionSkill, onFactionSkillChange, updateBaseValues}) => {
 
     const [availableAttributes, availableFaiths, availableSkills, availableFactions] = useLookup(['availableAttributes', 'availableFaiths', 'availableSkills', 'availableFactions'])
     const [showModal, setShowModal] = useState(false);
@@ -240,7 +240,7 @@ const BaseStats = ({name, attributes, faith, faction, factionSkills, onFactionSk
                             <SkillModal
                                 factionSkills={values.faction ? availableFactions.find(a => a.name === values.faction).skills : null}
                                 handleClose={handleClose}
-                                value={factionSkills}
+                                value={factionSkill}
                                 onSkillChoose={onFactionSkillChange}
                                 availableSkills={availableSkills}/>
                         </Dialog>

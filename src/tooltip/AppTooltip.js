@@ -3,7 +3,7 @@ import React from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
 import TooltipContent from "./TooltipContent";
 
-const HtmlTooltip = withStyles((theme) => ({
+export const HtmlTooltip = withStyles((theme) => ({
     tooltip: {
         maxWidth: 420,
         fontSize: theme.typography.pxToRem(12),

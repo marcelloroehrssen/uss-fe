@@ -11,6 +11,7 @@ import LoginDialog from "../src/layout/LoginDialog";
 import RegisterDialog from "../src/layout/RegisterDialog";
 import {useRegister} from "../src/hook/UseRegister";
 import {useUser} from "../src/hook/UseUser";
+import MustLogin from "../src/layout/MustLogin";
 
 const MyApp = ({Component, pageProps}) => {
 
@@ -21,7 +22,6 @@ const MyApp = ({Component, pageProps}) => {
     const {register, validateEmail} = useRegister();
     const [openLoginDialog, setOpenLoginDialog] = useState(false);
     const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
-
 
     useEffect(() => {
         const jssStyles = document.querySelector('#jss-server-side');
@@ -43,9 +43,10 @@ const MyApp = ({Component, pageProps}) => {
                             setOpenLoginDialog={setOpenLoginDialog}
                             setOpenRegisterDialog={setOpenRegisterDialog}/>
                     <Container>
-                        <Component {...pageProps}
-                                   alertOpen={alertOpen}
-                                   key={router.route}/>
+                        {data && <Component {...pageProps}
+                                            alertOpen={alertOpen}
+                                            key={router.route}/>}
+                        {!data && <MustLogin />}
                     </Container>
                 </div>
                 <LoginDialog open={openLoginDialog} alertOpen={alertOpen} handleClose={() => setOpenLoginDialog(false)}
@@ -53,7 +54,7 @@ const MyApp = ({Component, pageProps}) => {
                 <RegisterDialog open={openRegisterDialog} alertOpen={alertOpen}
                                 handleClose={() => setOpenRegisterDialog(false)} validateEmail={validateEmail}
                                 register={register}/>
-                { AlertNode }
+                {AlertNode}
             </ThemeProvider>
         </>
     )

@@ -1,6 +1,7 @@
 export default (req, res) => {
     res.statusCode = 200
     res.setHeader('Content-Type', 'application/json')
+
     res.end(JSON.stringify(
         {
             mode: 0,
@@ -12,16 +13,16 @@ export default (req, res) => {
                 mental: 1,
                 social: 1,
             },
-            defects: {
-                mode: -1 ,
-                list: []
-            },
+            defectMode: -1,
+            defects: [],
             job: null,
             jobSkills: [],
-            factionSkills: null,
-            skills: [],
+            factionSkill: null,
+            skills: {},
             discardedSkill: null,
-            backgrounds: {}
+            backgrounds: {},
+            items: {}
         }
     ))
 }
+

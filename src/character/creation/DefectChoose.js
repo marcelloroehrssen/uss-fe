@@ -23,40 +23,34 @@ const getRandomDefect = defect => defect[Math.floor(Math.random() * defect.lengt
 
 const getBackgroundPoint = selectedDefects => selectedDefects.reduce((tot, d2) => tot + d2.cost, 0);
 
-const DefectChoose = ({defects, onValueChange}) => {
+const DefectChoose = ({defectMode, defects, onModeChoose, onValueChange}) => {
 
     const [availableDefects] = useLookup(['availableDefects'])
     const [isAddDisabled, setAddDisabled] = useState(false);
 
     useEffect(() => {
         setAddDisabled(
-            getBackgroundPoint(availableDefects.filter(a => defects.list.indexOf(a.name) !== -1)) >= maxAvailableBackgroundPoint
-                || defects.list.length === availableDefects.length
+            getBackgroundPoint(availableDefects.filter(a => defects.indexOf(a.name) !== -1)) >= maxAvailableBackgroundPoint
+            || defects.length === availableDefects.length
         );
     }, [defects])
 
     const handleRandomAdd = () => {
-        onValueChange({
-            mode: defects.mode,
-            list: [
-                ...defects.list,
-                getRandomDefect(
-                    availableDefects.filter(d => defects.list.indexOf(d.name) === -1)
-                ).name
-            ]
-        })
+        onValueChange([
+            ...defects,
+            getRandomDefect(
+                availableDefects.filter(d => defects.indexOf(d.name) === -1)
+            ).name
+        ])
     }
 
     const handleAdd = e => {
-        if (defects.list.indexOf(e.target.name) !== -1) {
-            defects.list.splice(defects.list.indexOf(e.target.name), 1)
+        if (defects.indexOf(e.target.name) !== -1) {
+            defects.splice(defects.indexOf(e.target.name), 1)
         } else {
-            defects.list.push(e.target.name);
+            defects.push(e.target.name);
         }
-        onValueChange({
-            mode: defects.mode,
-            list: [...defects.list]
-        })
+        onValueChange([...defects])
     }
 
     return (<>
@@ -70,82 +64,84 @@ const DefectChoose = ({defects, onValueChange}) => {
             mb={3}
         >
             <Grid item xs={12}>
-                <IntroductionText hook="defects" />
+                <IntroductionText hook="defects"/>
             </Grid>
             <Grid item xs={6}>
-                <ButtonBox selected={defects.mode === 2} disabled={defects.mode === 1} onClick={() => onValueChange({...defects, mode:2})}>
+                <ButtonBox selected={defectMode === 2} disabled={defectMode === 1} onClick={() => onModeChoose(2)}>
                     <Typography align={'center'} variant={'h4'}>
                         {capitalMiniature("Modalità Non Casuale")}
                     </Typography>
                     <Typography align={'center'} variant={'h4'} style={{fontSize: Theme.typography.pxToRem(14)}}>
-                        <small style={{fontSize:20,margin:0}}><strong>Scelta consigliata</strong></small>
+                        <small style={{fontSize: 20, margin: 0}}><strong>Scelta consigliata</strong></small>
                     </Typography>
                     <Box m={2}>
-                        <Divider />
+                        <Divider/>
                     </Box>
                     <Typography
                         style={{fontSize: Theme.typography.pxToRem(14)}}
                         align={'center'}>
-                        In questa modalità potrai scegliere liberamente i difetti da assegnare al tuo personaggio. Nessun PG può avere un totale di difetti la cui somma superi 10 punti Background
+                        In questa modalità potrai scegliere liberamente i difetti da assegnare al tuo personaggio.
+                        Nessun PG può avere un totale di difetti la cui somma superi 10 punti Background
                     </Typography>
                 </ButtonBox>
             </Grid>
             <Grid item xs={6}>
-                <ButtonBox selected={defects.mode === 1} disabled={defects.mode === 2} onClick={() => onValueChange({...defects, mode:1})}>
+                <ButtonBox selected={defectMode === 1} disabled={defectMode === 2} onClick={() => onModeChoose(1)}>
                     <Typography align={'center'} variant={'h4'}>
                         {capitalMiniature("Modalità Casuale")}
                     </Typography>
                     <Typography align={'center'} variant={'h4'} style={{fontSize: Theme.typography.pxToRem(14)}}>
-                        <small style={{fontSize:20,margin:0}}>&nbsp;</small>
+                        <small style={{fontSize: 20, margin: 0}}>&nbsp;</small>
                     </Typography>
                     <Box m={2}>
-                        <Divider />
+                        <Divider/>
                     </Box>
                     <Typography
                         style={{fontSize: Theme.typography.pxToRem(14)}}
                         align={'center'}>
-                        In questa modalità il tuo PG prenderebbe 1 punto esperienza aggiuntivo ad ogni evento. Una volta raggiunta la soglia dei 10 punti background potrai tirare  una volta aggiuntiva
+                        In questa modalità il tuo PG prenderebbe 1 punto esperienza aggiuntivo ad ogni evento. Una volta
+                        raggiunta la soglia dei 10 punti background potrai tirare una volta aggiuntiva
                     </Typography>
                 </ButtonBox>
             </Grid>
             {
-                defects.mode === 1 && <Grid item xs={12}>
+                defectMode === 1 && <Grid item xs={12}>
                     <List component={Box}>
                         {
-                            defects.list
+                            defects
                                 .map(s => availableDefects.find(a => a.name === s))
                                 .map((d, i) => (
-                                <ListItem key={d.name} alignItems="flex-start"
-                                          divider={(i + 1) !== defects.list.length}>
-                                    <ListItemText
-                                        primary={<>
-                                            {d.name}
-                                            <Typography
-                                                component="span"
-                                                variant="body1"
-                                                color="textSecondary"
-                                                style={{paddingLeft: 20}}
-                                            >
-                                                {'bonus: ' + d.cost + ' punti background'}
-                                            </Typography>
-                                        </>}
-                                        secondary={
-                                            <>{d.description}</>
-                                        }
-                                        secondaryTypographyProps={{
-                                            variant: 'body1',
-                                            style: {marginTop: 8}
-                                        }}
-                                    />
-                                </ListItem>
-                            ))
+                                    <ListItem key={d.name} alignItems="flex-start"
+                                              divider={(i + 1) !== defects.length}>
+                                        <ListItemText
+                                            primary={<>
+                                                {d.name}
+                                                <Typography
+                                                    component="span"
+                                                    variant="body1"
+                                                    color="textSecondary"
+                                                    style={{paddingLeft: 20}}
+                                                >
+                                                    {'bonus: ' + d.cost + ' punti background'}
+                                                </Typography>
+                                            </>}
+                                            secondary={
+                                                <>{d.description}</>
+                                            }
+                                            secondaryTypographyProps={{
+                                                variant: 'body1',
+                                                style: {marginTop: 8}
+                                            }}
+                                        />
+                                    </ListItem>
+                                ))
                         }
                     </List>
                     <Grid item>
                         <Box align={'center'}>
                             <Typography component={"h4"} variant={"caption"}>
-                                {!isAddDisabled && 'Per ora hai ' + getBackgroundPoint(availableDefects.filter(a => defects.list.indexOf(a.name) !== -1)) + ' punti background'}
-                                {isAddDisabled && 'Hai ' + getBackgroundPoint(availableDefects.filter(a => defects.list.indexOf(a.name) !== -1)) + ' punti background'}
+                                {!isAddDisabled && 'Per ora hai ' + getBackgroundPoint(availableDefects.filter(a => defects.indexOf(a.name) !== -1)) + ' punti background'}
+                                {isAddDisabled && 'Hai ' + getBackgroundPoint(availableDefects.filter(a => defects.indexOf(a.name) !== -1)) + ' punti background'}
                             </Typography>
                         </Box>
                     </Grid>
@@ -154,19 +150,19 @@ const DefectChoose = ({defects, onValueChange}) => {
                             variant="contained"
                             color="primary"
                             disabled={
-                                getBackgroundPoint(availableDefects.filter(a => defects.list.indexOf(a.name) !== -1)) >= maxAvailableBackgroundPoint
-                                || defects.list.length === availableDefects.length
+                                getBackgroundPoint(availableDefects.filter(a => defects.indexOf(a.name) !== -1)) >= maxAvailableBackgroundPoint
+                                || defects.length === availableDefects.length
                             }
                             onClick={handleRandomAdd}>
-                                {defects.list.length === 0 && !isAddDisabled && 'Devi aggiungere almeno un difetto'}
-                                {defects.list.length !== 0 && !isAddDisabled && 'Aggiungi un Difetto'}
-                                {isAddDisabled && 'Non puoi aggiungere altri difetti'}
+                            {defects.length === 0 && !isAddDisabled && 'Devi aggiungere almeno un difetto'}
+                            {defects.length !== 0 && !isAddDisabled && 'Aggiungi un Difetto'}
+                            {isAddDisabled && 'Non puoi aggiungere altri difetti'}
                         </CenteredButton>
                     </Grid>
                 </Grid>
             }
             {
-                defects.mode === 2 && <>
+                defectMode === 2 && <>
                     <Grid item xs={12}>
                         <FormControl component="fieldset" disabled={true}>
                             <FormLabel component="legend">Seleziona i difetti</FormLabel>
@@ -177,11 +173,12 @@ const DefectChoose = ({defects, onValueChange}) => {
                                             key={d.name}
                                             style={{marginTop: 10, marginBottom: 10}}
                                             control={<Checkbox
+                                                color={"secondary"}
                                                 disabled={
-                                                    !(defects.list.indexOf(d.name) !== -1)
-                                                    && getBackgroundPoint([...availableDefects.filter(a => defects.list.indexOf(a.name) !== -1), d]) > maxAvailableBackgroundPoint
+                                                    !(defects.indexOf(d.name) !== -1)
+                                                    && getBackgroundPoint([...availableDefects.filter(a => defects.indexOf(a.name) !== -1), d]) > maxAvailableBackgroundPoint
                                                 }
-                                                checked={defects.list.indexOf(d.name) !== -1}
+                                                checked={defects.indexOf(d.name) !== -1}
                                                 onChange={handleAdd}
                                                 name={d.name}
                                             />}

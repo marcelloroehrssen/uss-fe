@@ -1,11 +1,8 @@
 import React, {useEffect} from "react";
 import GameMode from "../../src/character/creation/GameMode";
-import Box from "@material-ui/core/Box";
 import BaseStats from "../../src/character/creation/BaseStats";
 import DefectChoose from "../../src/character/creation/DefectChoose";
 import JobChoose from "../../src/character/creation/JobChoose";
-import Paper from "@material-ui/core/Paper";
-import Theme from "../../src/Theme";
 import SkillChoose from "../../src/character/creation/SkillChoose";
 import CenteredButton from "../../src/form/CenteredButton";
 import BackgroundChoose from "../../src/character/creation/BackgroundChoose";
@@ -16,17 +13,22 @@ import {useCharacterCreationStep} from "../../src/hook/UseCharacterCreationStep"
 import CharacterCreationStepper from "../../src/stepper/CharacterCreationStepper";
 import AppContainer from "../../src/layout/AppContainer";
 import Resume from "../../src/character/creation/Resume";
+import {useCharacterSave} from "../../src/hook/UseCharacterSave";
+import {useRouter} from "next/router";
+import ItemChoose from "../../src/character/creation/ItemChoose";
 
 const CharacterCreate = (
     {
         availableAttributes, availableDefects, availableJobsTypes, availableJobs, availableSkills, availableFaiths,
-        availableFactions, availableBackgrounds, availableIntroductionText
+        availableFactions, availableBackgrounds, availableIntroductionText, availableItemsType, availableItems, alertOpen
     }) => {
 
-    const [characterSheet, isValidating, updateCharacterSheet, setCharacterSheet] = useCharacter();
-    const [steps, activeStep, canPassOver, passOver] = useCharacterCreationStep(
-        ['Modalità', 'Difetti', 'Caratteristiche', 'Mestiere', 'Abilità', 'Background'], characterSheet
+    const [characterSheet, isValidating, updateCharacterSheet, setCharacterSheet] = useCharacter({isNew: true});
+    const [isSaving, , save] = useCharacterSave();
+    const [steps, activeStep, disable, passOver] = useCharacterCreationStep(
+        ['Modalità', 'Difetti', 'Caratteristiche', 'Mestiere', 'Abilità', 'Background', 'Oggetti']
     );
+    const router = useRouter()
 
     const updateBaseValues = (name, faith, faction, attributes) => {
         setCharacterSheet({...characterSheet, name, faith, faction, attributes})
@@ -38,8 +40,8 @@ const CharacterCreate = (
 
     return (
         <LookupProvider values={{
-            availableAttributes, availableDefects, availableJobsTypes, availableJobs,
-            availableSkills, availableFaiths, availableFactions, availableBackgrounds,
+            availableAttributes, availableDefects, availableJobsTypes, availableJobs, availableSkills,
+            availableFaiths, availableFactions, availableBackgrounds, availableItemsType, availableItems
         }}>
             <IntroductionTextProvider values={availableIntroductionText}>
                 {
@@ -50,16 +52,18 @@ const CharacterCreate = (
                                 mode={characterSheet.mode}
                                 onModeChoose={(c) => updateCharacterSheet('mode', c)}/>}
                             {activeStep === 1 && <DefectChoose
+                                defectMode={characterSheet.defectMode}
                                 defects={characterSheet.defects}
+                                onModeChoose={(c) => updateCharacterSheet('defectMode', c)}
                                 onValueChange={(c) => updateCharacterSheet('defects', c)}/>}
                             {activeStep === 2 && <BaseStats
                                 name={characterSheet.name}
                                 attributes={characterSheet.attributes}
                                 faith={characterSheet.faith}
                                 faction={characterSheet.faction}
-                                factionSkills={characterSheet.factionSkills}
+                                factionSkill={characterSheet.factionSkill}
                                 updateBaseValues={updateBaseValues}
-                                onFactionSkillChange={(c) => updateCharacterSheet('factionSkills', c)}/>}
+                                onFactionSkillChange={(c) => updateCharacterSheet('factionSkill', c)}/>}
                             {activeStep === 3 && <JobChoose
                                 job={characterSheet.job}
                                 jobSkills={characterSheet.jobSkills}
@@ -68,7 +72,7 @@ const CharacterCreate = (
                                 onSkillChange={(c) => updateCharacterSheet('jobSkills', c)}/>}
                             {activeStep === 4 && <SkillChoose
                                 selectedSkills={characterSheet.skills}
-                                factionSkills={characterSheet.factionSkills}
+                                factionSkill={characterSheet.factionSkill}
                                 jobSkills={characterSheet.jobSkills}
                                 discardedSkill={characterSheet.discardedSkill}
                                 mental={characterSheet.attributes.mental}
@@ -78,14 +82,33 @@ const CharacterCreate = (
                                 characterSheet={characterSheet}
                                 selectedbackgrounds={characterSheet.backgrounds}
                                 onValueChange={(c) => updateCharacterSheet('backgrounds', c)}/>}
-                            {activeStep === 6 && <Resume characterSheet={characterSheet}/>}
-                            <CenteredButton
+                            {activeStep === 6 && <ItemChoose
+                                characterSheet={characterSheet}
+                                itemsType={availableItemsType}
+                                items={availableItems}
+                                onValueChange={(c) => updateCharacterSheet('items', c)}/>}
+                            {activeStep === 7 && <Resume characterSheet={characterSheet}/>}
+                            {activeStep !== 7 && <CenteredButton
                                 variant="contained"
-                                disabled={canPassOver}
+                                disabled={disable(characterSheet)}
                                 onClick={() => passOver()}
                                 color="primary">
                                 Ho scelto
-                            </CenteredButton>
+                            </CenteredButton>}
+                            {activeStep === 7 && <CenteredButton
+                                disabled={isSaving}
+                                variant="contained"
+                                onClick={() => save(characterSheet)
+                                    .then(status => {
+                                        alertOpen('Successo', 'Il tuo personaggio è stato creato con successo, attendi che un narratore lo approvi')
+                                        return status;
+                                    })
+                                    .then(status => status ? router.push('/') : null)
+                                    .catch(error => alertOpen("Errore nel salvataggio", 'E\' avvenuto un errore durante il salvataggio del PG riprova o scrivi ad un narratore'))
+                                }
+                                color="primary">
+                                Salva
+                            </CenteredButton>}
                         </AppContainer>
                     </div>
                 }
@@ -96,17 +119,21 @@ const CharacterCreate = (
 
 export async function getStaticProps(ctx) {
 
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.TLS_REJECT_UNAUTHORIZED;
 
-    const availableDefectsRes = fetch('http://localhost:8000/lookup/defects').then(r => r.json());
-    const availableAttributesRes = fetch('http://localhost:8000/lookup/attributes').then(r => r.json());
-    const availableJobsTypesRes = fetch('http://localhost:8000/lookup/jobs_types').then(r => r.json());
-    const availableJobsRes = fetch('http://localhost:8000/lookup/jobs').then(r => r.json());
-    const availableSkillsRes = fetch('http://localhost:8000/lookup/skills').then(r => r.json());
-    const availableFaithsRes = fetch('http://localhost:8000/lookup/faiths').then(r => r.json());
-    const availableFactionsRes = fetch('http://localhost:8000/lookup/factions').then(r => r.json());
-    const availableBackgroundsRes = fetch('http://localhost:8000/lookup/background').then(r => r.json());
-    const availableIntroductionTextRes = fetch('http://localhost:8000/lookup/introduction_text').then(r => r.json());
+    const lookupUrl = process.env.BACKEND_URL + 'lookup/';
+
+    const availableDefectsRes = fetch(lookupUrl + 'defects').then(r => r.json());
+    const availableAttributesRes = fetch(lookupUrl + 'attributes').then(r => r.json());
+    const availableJobsTypesRes = fetch(lookupUrl + 'jobs_types').then(r => r.json());
+    const availableJobsRes = fetch(lookupUrl + 'jobs').then(r => r.json());
+    const availableSkillsRes = fetch(lookupUrl + 'skills').then(r => r.json());
+    const availableFaithsRes = fetch(lookupUrl + 'faiths').then(r => r.json());
+    const availableFactionsRes = fetch(lookupUrl + 'factions').then(r => r.json());
+    const availableBackgroundsRes = fetch(lookupUrl + 'background').then(r => r.json());
+    const availableIntroductionTextRes = fetch(lookupUrl + 'introduction_text').then(r => r.json());
+    const availableItemsTypeRes = fetch(lookupUrl + 'items_types').then(r => r.json());
+    const availableItemsRes = fetch(lookupUrl + 'items').then(r => r.json());
 
     const availableDefects = await availableDefectsRes
     const availableAttributes = await availableAttributesRes
@@ -117,8 +144,11 @@ export async function getStaticProps(ctx) {
     const availableFactions = await availableFactionsRes
     const availableBackgrounds = await availableBackgroundsRes
     const availableIntroductionText = await availableIntroductionTextRes
+    const availableItemsType = await availableItemsTypeRes
+    const availableItems = await availableItemsRes
 
     return {
+        revalidate: 300,
         props: {
             availableAttributes,
             availableDefects,
@@ -128,7 +158,9 @@ export async function getStaticProps(ctx) {
             availableFaiths,
             availableFactions,
             availableBackgrounds,
-            availableIntroductionText
+            availableIntroductionText,
+            availableItemsType,
+            availableItems
         }
     }
 }

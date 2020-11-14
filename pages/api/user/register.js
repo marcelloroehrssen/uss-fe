@@ -1,10 +1,8 @@
 export default async (req, res) => {
 
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.TLS_REJECT_UNAUTHORIZED;
 
-    console.log(req.body);
-
-    const registerReq = fetch('https://localhost:8000/register_json', {
+    const registerReq = fetch(process.env.BACKEND_URL + 'register_json', {
         headers: {
             "Content-Type": "application/json"
         },

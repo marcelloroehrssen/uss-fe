@@ -1,8 +1,8 @@
 export default async (req, res) => {
 
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.TLS_REJECT_UNAUTHORIZED;
 
-    const loginReq = fetch('https://localhost:8000/login_json', {
+    const loginReq = fetch(process.env.BACKEND_URL + 'login_json', {
         headers: {
             "Content-Type": "application/json"
         },

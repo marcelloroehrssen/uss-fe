@@ -15,7 +15,7 @@ const getMaxAttribute = (attribute) => {
     return 3;
 }
 
-const SkillChoose = ({selectedSkills, jobSkills, factionSkills, discardedSkill, mental, onDiscaredSkill, onValueChange}) => {
+const SkillChoose = ({selectedSkills, jobSkills, factionSkill, discardedSkill, mental, onDiscaredSkill, onValueChange}) => {
 
     const [availableSkills] = useLookup(['availableSkills']);
 
@@ -67,23 +67,23 @@ const SkillChoose = ({selectedSkills, jobSkills, factionSkills, discardedSkill, 
             </Grid>
             <Grid item xs={3}>
                 <Box align="right">
-                    {!(factionSkills === discardedSkill) && <Button variant="outlined" color="primary"
-                                                                    onClick={() => onDiscaredSkill(factionSkills)}>Scarta</Button>}
+                    {!(factionSkill === discardedSkill) && <Button variant="outlined" color="primary"
+                                                                    onClick={() => onDiscaredSkill(factionSkill)}>Scarta</Button>}
                 </Box>
             </Grid>
             <Grid item xs={3}>
                 <Typography variant="caption"
-                            style={{textDecoration: factionSkills === discardedSkill ? 'line-through' : 'none'}}>{factionSkills}</Typography>
+                            style={{textDecoration: factionSkill === discardedSkill ? 'line-through' : 'none'}}>{factionSkill}</Typography>
             </Grid>
             <Grid item xs={3}>
                 <Box align="right">
-                    <AppTooltip availableData={availableSkills} data={factionSkills} placement="right">
+                    <AppTooltip availableData={availableSkills} data={factionSkill} placement="right">
                         <Rating
-                            disabled={factionSkills === discardedSkill}
-                            name={factionSkills.toLowerCase()}
-                            value={selectedSkills[factionSkills] || 0}
-                            onChange={chooseSkill(factionSkills)}
-                            max={getMaxAttribute(factionSkills)}
+                            disabled={factionSkill === discardedSkill}
+                            name={factionSkill.toLowerCase()}
+                            value={selectedSkills[factionSkill] || 0}
+                            onChange={chooseSkill(factionSkill)}
+                            max={getMaxAttribute(factionSkill)}
                             icon={<Brightness1Icon/>}
                         />
                     </AppTooltip>

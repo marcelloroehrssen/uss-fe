@@ -48,17 +48,6 @@ const SkillChoose = ({count, list, pushSkills, currentSelection, availableSkills
 
 const SkillModal = ({job, selectedSkills, availableSkills, handleClose, onSkillChoose}) => {
 
-    const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-
-    useEffect(() => {
-        const selectableSkills = job.skillGroups.reduce((tot, c) => tot + c.count, 0);
-        if (selectableSkills === selectedSkills.length) {
-            setIsButtonDisabled(false);
-        } else {
-            setIsButtonDisabled(true);
-        }
-    }, [selectedSkills])
-
     useEffect(() => {
         job.skillGroups.map(sg => {
             if (sg.list.length === 1) {
@@ -100,9 +89,10 @@ const SkillModal = ({job, selectedSkills, availableSkills, handleClose, onSkillC
             }
         </DialogContent>
         <DialogActions disableSpacing>
+            {console.log(selectedSkills)}
             <Button
                 variant="outlined"
-                disabled={isButtonDisabled}
+                disabled={!(job.skillGroups.reduce((tot, c) => tot + c.count, 0) === selectedSkills.length)}
                 color="secondary"
                 onClick={() => handleClose()}>
                 Ho scelto
