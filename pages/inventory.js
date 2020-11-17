@@ -5,11 +5,25 @@ import React from "react";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
-import {CardContent, Typography} from "@material-ui/core";
+import {Box, CardContent, Typography} from "@material-ui/core";
 import CardMedia from "@material-ui/core/CardMedia";
 import {showImage} from "../src/downtime/ShowImage";
 import ShowDot from "../src/layout/ShowDot";
 import makeStyles from "@material-ui/core/styles/makeStyles";
+import withStyles from "@material-ui/core/styles/withStyles";
+import {HtmlTooltip} from "../src/tooltip/AppTooltip";
+import {DashedPaper} from "./downtime";
+
+export const DashedCard = withStyles((theme) => ({
+    root: {
+        height: "100%",
+        boxShadow: 'inset 0 0 13px 0px black;',
+        color: "rgb(123 123 123)",
+        lineHeight: "100%",
+        minHeight: "300px",
+        background: 'rgba(0,0,0,.15)'
+    }
+}))(Card);
 
 const useStyles = makeStyles((theme) => ({
     media: {
@@ -53,11 +67,22 @@ const Inventory = () => {
                     ))
                 }
                 {
-                    !inventory || inventory.length === 0 && <>
-                        <Grid item xs={12}>
-                            <Typography align="center">Non hai un inventario</Typography>
+                    inventory && Array(inventory[0].maxItems - inventory[0].entries.length).fill(0).map((i, k) => (
+                        <Grid item key={'empty_' + k} xs={3}>
+                            <DashedCard elevation={0}>
+                                <Box style={{height: "100%"}} display="flex" justifyContent="center" alignItems="center">
+                                    <Typography style={{color:'#000'}}>
+                                    <em>Spazio disponibile</em>
+                                    </Typography>
+                                </Box>
+                            </DashedCard>
                         </Grid>
-                    </>
+                    ))
+                }
+                {
+                    (!inventory || inventory.length === 0) && <Grid item xs={12}>
+                        <Typography align="center">Non hai oggetti nell'inventario</Typography>
+                    </Grid>
                 }
             </Grid>
         </AppContainer>

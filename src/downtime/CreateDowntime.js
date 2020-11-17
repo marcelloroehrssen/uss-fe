@@ -1,6 +1,6 @@
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import {Typography} from "@material-ui/core";
+import {Divider, Typography} from "@material-ui/core";
 import DialogContent from "@material-ui/core/DialogContent";
 import {CheckboxWithLabel, RadioGroup} from 'formik-material-ui';
 import React, {useEffect, useState} from "react";
@@ -35,7 +35,7 @@ const CreateDowntime = ({downtimeDefinition, downtime, inventory, open, onClose,
     const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
-        setExpanded(downtime.downTimeDefinition?.name);
+        setExpanded(downtime.recipe?.downtimeDefinition?.id);
     }, [downtime])
 
     const handleChange = (panel) => (event, isExpanded) => {
@@ -44,13 +44,15 @@ const CreateDowntime = ({downtimeDefinition, downtime, inventory, open, onClose,
 
     const isInInventory = (item) => inventory[0].entries.map(e => e.item.name).includes(item.name);
 
+    const getRecipe = (d, recipeId) => d.recipes.find(r => r.id + '' === recipeId)
+
     return (
         <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
             <Formik initialValues={{
                 id: downtime.id ?? null,
                 name: downtime.name ?? '',
                 description: downtime.description ?? '',
-                definition: downtime.downTimeDefinition?.name ?? '',
+                recipe: (downtime.recipe?.id ?? '') + '',
                 relatedItems: downtime.relatedItems?.map(i => i.item.name) ?? []
             }}
                     validate={(values) => {
@@ -71,7 +73,7 @@ const CreateDowntime = ({downtimeDefinition, downtime, inventory, open, onClose,
                             resolution: null,
                             resolutionTime: null,
                             createdAt: new Date().toISOString(),
-                            downTimeDefinition: downtimeDefinition.find(d => d.name === values.definition),
+                            recipe: values.recipe,
                             relatedItems: inventory[0].entries.filter(i => values.relatedItems.includes(i.item.name))
                         }
                         setSubmitting(false)
@@ -97,26 +99,18 @@ const CreateDowntime = ({downtimeDefinition, downtime, inventory, open, onClose,
                     </DialogTitle>
                     <DialogContent>
                         <Form>
-                            <Field component={RadioGroup} name="definition">
+                            <Field component={RadioGroup} name="recipe">
                                 {
                                     downtimeDefinition.map((d) => (
-                                        <Accordion key={d.name}
-                                                   expanded={expanded === d.name}
-                                                   onChange={handleChange(d.name)}>
+                                        <Accordion key={d.id}
+                                                   expanded={expanded === d.id}
+                                                   onChange={handleChange(d.id)}>
                                             <AccordionSummary
                                                 expandIcon={<ExpandMoreIcon/>}
                                                 aria-label="Expand"
                                                 aria-controls="additional-actions1-content"
                                                 id="additional-actions1-header"
-                                            >
-                                                <FormControlLabel
-                                                    key={d.name}
-                                                    value={d.name}
-                                                    control={<Radio disabled={isSubmitting}/>}
-                                                    label={d.name}
-                                                    disabled={isSubmitting}
-                                                />
-                                            </AccordionSummary>
+                                            >{d.name}</AccordionSummary>
                                             <AccordionDetails>
                                                 <Grid container direction="column" justify="space-between"
                                                       alignItems="stretch" spacing={1}>
@@ -135,7 +129,8 @@ const CreateDowntime = ({downtimeDefinition, downtime, inventory, open, onClose,
                                                                     type="checkbox"
                                                                     name="relatedItems"
                                                                     Label={{
-                                                                        label: <ItemTooltip item={i} additional={!isInInventory(i) ? "non hai questo oggetto" : null}>
+                                                                        label: <ItemTooltip item={i}
+                                                                                            additional={!isInInventory(i) ? "non hai questo oggetto" : null}>
                                                                             <Avatar variant="rounded"
                                                                                     className={classes.large}
                                                                                     src={showImage(i)}
@@ -147,6 +142,47 @@ const CreateDowntime = ({downtimeDefinition, downtime, inventory, open, onClose,
                                                             ))
                                                         }
                                                     </Grid>
+                                                    {
+                                                        d.recipes.map((r, i) => (<React.Fragment key={r.id}>
+                                                            <Grid item>
+                                                                <Box mt={1} mb={1}><Divider/></Box>
+                                                            </Grid>
+                                                            <Grid item>
+                                                                <FormControlLabel key={r.id}
+                                                                                  value={r.id + ''}
+                                                                                  control={<Radio
+                                                                                      disabled={isSubmitting}/>}
+                                                                                  label={<>
+                                                                                      <strong>{r.name}</strong>
+                                                                                      <Typography component="span"
+                                                                                          dangerouslySetInnerHTML={{__html: r.description}}/>
+                                                                                  </>}
+                                                                                  disabled={isSubmitting}/>
+                                                            </Grid>
+                                                            <Grid item>
+                                                                {
+                                                                    r.items.map(i => (
+                                                                        <Field
+                                                                            key={i.name}
+                                                                            value={i.name}
+                                                                            component={CheckboxWithLabel}
+                                                                            type="checkbox"
+                                                                            name="relatedItems"
+                                                                            Label={{
+                                                                                label: <ItemTooltip item={i}
+                                                                                                    additional={!isInInventory(i) ? "non hai questo oggetto" : null}>
+                                                                                    <Avatar variant="rounded"
+                                                                                            className={classes.large}
+                                                                                            src={showImage(i)}/>
+                                                                                </ItemTooltip>,
+                                                                                disabled: isSubmitting || !isInInventory(i) || values.recipe+'' !== r.id+''
+                                                                            }}
+                                                                        />
+                                                                    ))
+                                                                }
+                                                            </Grid>
+                                                        </React.Fragment>))
+                                                    }
                                                 </Grid>
                                             </AccordionDetails>
                                         </Accordion>

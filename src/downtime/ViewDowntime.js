@@ -14,10 +14,10 @@ const ViewDowntime = ({currentDowntime, onClose, onEdit, children}) => (
         </DialogTitle>
         <DialogContent>
             <Typography variant="caption">Definizione associata
-                (<strong>{currentDowntime.downTimeDefinition.name}</strong>)</Typography>
+                (<strong>{currentDowntime.recipe.downtimeDefinition.name}</strong>)</Typography>
             <Typography paragraph
                         component={Box}
-                        dangerouslySetInnerHTML={{__html: currentDowntime.downTimeDefinition.description}}/>
+                        dangerouslySetInnerHTML={{__html: currentDowntime.recipe.downtimeDefinition.description}}/>
             <Typography variant="caption">Descrizione</Typography>
             <Typography paragraph>
                 {(currentDowntime.description === null || currentDowntime.description === '') ? "non hai fornita una descrizione specifica per questa azione" : currentDowntime.description}

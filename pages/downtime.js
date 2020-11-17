@@ -3,7 +3,7 @@ import AppContainer from "../src/layout/AppContainer";
 import useSWR from "swr";
 import StepTitle from "../src/layout/StepTitle";
 import Grid from "@material-ui/core/Grid";
-import {Box, Typography} from "@material-ui/core";
+import {Box, Divider, Typography} from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import Theme from "../src/Theme";
 import {ucfirst} from "../src/StringUtils";
@@ -20,6 +20,10 @@ import CreateDowntime from "../src/downtime/CreateDowntime";
 import ItemTooltip from "../src/tooltip/ItemTooltip";
 import {describe} from "../src/downtime/describe";
 import {showImage} from "../src/downtime/ShowImage";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
+import CardActions from "@material-ui/core/CardActions";
 
 export const ColoredBadge = withStyles((theme) => ({
     colorPrimary: {
@@ -43,17 +47,16 @@ export const DashedPaper = withStyles((theme) => ({
 }))(Paper);
 
 
-
-const ItemList = ({downtime, classes, isPresent}) => (
+const ItemList = ({items, relatedItems, classes, isPresent}) => (
     <Grid item container justify="flex-start" spacing={1}>
         {
-            downtime.downTimeDefinition.items.map(item => (
+            items.map(item => (
                 <Grid item key={item.name}>
                     <ItemTooltip item={item}
-                                 color={isPresent(downtime.relatedItems, item)}
+                                 color={isPresent(relatedItems, item)}
                                  additional={
-                                     isPresent(downtime.relatedItems, item) === 'primary' ?
-                                         'Tutto ok' : isPresent(downtime.relatedItems, item) === 'secondary' ?
+                                     isPresent(relatedItems, item) === 'primary' ?
+                                         'Tutto ok' : isPresent(relatedItems, item) === 'secondary' ?
                                          'Presente in inventario ma non assegnato a questa azione' : 'Non hai questo oggetto'
                                  }
                     >
@@ -73,8 +76,16 @@ const useStyles = makeStyles((theme) => ({
         width: theme.spacing(7),
         height: theme.spacing(7),
     },
+    cardLayout: {
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    cardContent: {
+        flex: 1,
+        flexGrow: 1
+    }
 }));
-
 
 
 const Downtime = ({downtimeDefinition, alertOpen}) => {
@@ -106,33 +117,54 @@ const Downtime = ({downtimeDefinition, alertOpen}) => {
             <Grid container spacing={3}>
                 {
                     downtimes && inventory && downtimes.map((downtime) => (
-                        <Grid key={downtime.name} item xs={12} md={4}>
-                            <Paper style={{height: "100%"}} component={Box} elevation={4}
-                                   p={Theme.typography.pxToRem(50)}>
-                                <Grid container direction="column" justify="space-between" alignItems="stretch">
-                                    <Grid item>
-                                        <Typography variant="subtitle1">{ucfirst(downtime.name)}</Typography>
-                                    </Grid>
-                                    <Grid item>
+                        <Grid key={downtime.id} item xs={12} md={4}>
+                            <Card className={classes.cardLayout}>
+                                <CardHeader disableTypography
+                                            title={<Typography
+                                                variant="subtitle1">{ucfirst(downtime.name)}</Typography>}/>
+                                <CardContent className={classes.cardContent}>
+                                    <Box>
+                                        <Typography>{downtime.recipe.name}</Typography>
                                         <Typography paragraph>{describe(downtime, 150)}</Typography>
-                                    </Grid>
-                                    <Grid item container justify="flex-start" spacing={1}>
-                                        <ItemList downtime={downtime} classes={classes} isPresent={isPresent}/>
-                                    </Grid>
-                                            <Typography paragraph>&nbsp;</Typography>
-                                            <Typography variant="caption">Risoluzione</Typography>
-                                            <Typography component={Box}
-                                                        paragraph>
-                                                {downtime.resolution?.replace(/<[^>]+>/g, '').substring(0, 150) ?? 'Non ancora risolto'}
-                                            </Typography>
-                                    <Grid>
-                                        <CenteredButton variant="contained" color="primary" condensed
-                                                        onClick={() => setCurrentDowntime(downtime)}>
-                                            vedi
-                                        </CenteredButton>
-                                    </Grid>
-                                </Grid>
-                            </Paper>
+                                    </Box>
+                                    <Box mt={1} mb={1}>
+                                        <Divider />
+                                    </Box>
+                                    <Box>
+                                        <ItemList paragraph items={downtime.recipe.downtimeDefinition.items}
+                                                  relatedItems={downtime.relatedItems}
+                                                  classes={classes}
+                                                  isPresent={isPresent}/>
+                                    </Box>
+                                    <Box mt={1} mb={1}>
+                                        <Divider />
+                                    </Box>
+                                    <Box mt={1}>
+                                        <ItemList paragraph items={downtime.recipe.items}
+                                                  relatedItems={downtime.relatedItems}
+                                                  classes={classes}
+                                                  isPresent={isPresent}/>
+                                    </Box>
+                                    <Box mt={1} mb={1}>
+                                        <Divider />
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption">Risoluzione</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography component={Box}
+                                                    paragraph>
+                                            {downtime.resolution?.replace(/<[^>]+>/g, '').substring(0, 150) ?? 'Non ancora risolto'}
+                                        </Typography>
+                                    </Box>
+                                </CardContent>
+                                <CardActions>
+                                    <CenteredButton variant="contained" color="primary" condensed
+                                                    onClick={() => setCurrentDowntime(downtime)}>
+                                        vedi
+                                    </CenteredButton>
+                                </CardActions>
+                            </Card>
                         </Grid>
                     ))
                 }
@@ -165,7 +197,10 @@ const Downtime = ({downtimeDefinition, alertOpen}) => {
                                                   setCurrentDowntime(null)
                                                   setEditableValues(currentDowntime)
                                               }}>
-                <ItemList downtime={currentDowntime} classes={classes} isPresent={isPresent}/>
+                <ItemList items={currentDowntime.recipe.downtimeDefinition.items}
+                          relatedItems={currentDowntime.relatedItems}
+                          classes={classes}
+                          isPresent={isPresent}/>
             </ViewDowntime>}
             <CreateDowntime open={editableValues !== null}
                             onClose={() => setEditableValues(null)}

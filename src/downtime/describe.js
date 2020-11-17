@@ -4,7 +4,7 @@ export const describe = (downtTime, length) => {
     if (downtTime.description !== '' && downtTime.description !== null) {
         originalDescription = downtTime.description
     } else {
-        originalDescription = downtTime.downTimeDefinition.description.replace(/<[^>]+>/g, '')
+        originalDescription = downtTime.recipe.downtimeDefinition.description.replace(/<[^>]+>/g, '')
     }
 
     let description = originalDescription.substring(0, length)
